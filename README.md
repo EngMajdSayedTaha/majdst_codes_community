@@ -60,19 +60,27 @@ community-web-app/
 npm install
 ```
 
-### 2) Start development server
+### 2) Configure Microsoft Clarity
+
+Create a `.env` file in the project root and add your Clarity project ID:
+
+```bash
+VITE_CLARITY_PROJECT_ID=your-clarity-project-id
+```
+
+### 3) Start development server
 
 ```bash
 npm run dev
 ```
 
-### 3) Build for production
+### 4) Build for production
 
 ```bash
 npm run build
 ```
 
-### 4) Preview production build
+### 5) Preview production build
 
 ```bash
 npm run preview
