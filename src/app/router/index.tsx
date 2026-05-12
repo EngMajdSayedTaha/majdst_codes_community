@@ -5,6 +5,8 @@ import DevCardsPage from '@pages/DevCardsPage';
 import ChallengesPage from '@pages/ChallengesPage';
 import AboutPage from '@pages/AboutPage';
 import MemeLabPage from '@pages/MemeLabPage';
+import PrivacyPage from '@pages/PrivacyPage';
+import CookiePolicyPage from '@pages/CookiePolicyPage';
 import NotFoundPage from '@pages/NotFoundPage';
 
 /**
@@ -32,6 +34,14 @@ const router = createBrowserRouter(
     {
       path: '/meme-lab',
       element: <MemeLabPage />,
+    },
+    {
+      path: '/privacy',
+      element: <PrivacyPage />,
+    },
+    {
+      path: '/cookies',
+      element: <CookiePolicyPage />,
     },
     {
       path: '*',

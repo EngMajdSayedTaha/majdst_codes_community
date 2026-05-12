@@ -50,6 +50,15 @@ export interface NewsletterSubscription {
   preferences?: string[];
 }
 
+export interface CookieConsent {
+  analytics: boolean;
+  marketing: boolean;
+  functional: boolean;
+  necessary: boolean; // Always true
+  timestamp: number;
+  version: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;

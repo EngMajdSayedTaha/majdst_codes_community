@@ -1141,20 +1141,25 @@ footer {
   background: var(--surface);
   border-top: 1px solid var(--border);
   padding: var(--spacing-xl);
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  flex-wrap: gap;
+  gap: 12px;
 }
 
 .footer-logo {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--primary);
+  justify-self: start;
 }
 
 .footer-logo span {
   color: var(--muted);
+}
+
+.footer-links {
+  justify-self: center;
 }
 
 .footer-copy {
@@ -1162,6 +1167,36 @@ footer {
   font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.05em;
+  justify-self: end;
+}
+
+.footer-links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Center the footer links between logo and copy */
+.footer-links {
+  margin: 0 auto;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus {
+  color: var(--primary);
+}
+
+.link-sep {
+  color: var(--border);
+  padding: 0 4px;
 }
 
 /* RESPONSIVE */

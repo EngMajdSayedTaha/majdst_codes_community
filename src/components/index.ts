@@ -6,6 +6,7 @@ import ChallengesSection from './sections/ChallengesSection';
 import MemeLabSection from './sections/MemeLabSection';
 import AboutSection from './sections/AboutSection';
 import NewsletterSection from './sections/NewsletterSection';
+import { CookieConsent } from './common/CookieConsent';
 
 export {
 	Navbar,
@@ -16,4 +17,5 @@ export {
 	MemeLabSection,
 	AboutSection,
 	NewsletterSection,
+	CookieConsent,
 };
