@@ -15,7 +15,8 @@ import '../styles/theme.css';
  */
 const initializeClarity = () => {
   const clarityProjectId = import.meta.env.VITE_CLARITY_PROJECT_ID;
-  
+  // Temporary debug: show whether the env var was inlined at build time
+  console.log('VITE_CLARITY_PROJECT_ID (in bundle):', clarityProjectId);
   if (!clarityProjectId) {
     return; // Clarity project ID not configured
   }
