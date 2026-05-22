@@ -30,7 +30,7 @@ const AboutSection = () => {
           <div className="md:col-span-1 flex justify-center">
             <div className="w-48 h-48 rounded-full overflow-hidden shadow-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800">
               <img
-                src={profile?.avatarUrl || '/images/profile.jpg'}
+                src={'/images/profile.jpg'}
                 alt={profile?.name ?? 'Majd'}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 className="profile-avatar-large w-full h-full object-cover"
