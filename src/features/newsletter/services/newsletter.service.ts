@@ -2,16 +2,14 @@ import { supabase } from '@lib/supabaseClient';
 
 class NewsletterService {
   async subscribe(email: string, firstName?: string): Promise<void> {
-    const { error } = await supabase.from('newsletter_subscribers').upsert(
-      {
-        email,
-        first_name: firstName ?? null,
-        status: 'confirmed',
-        preferences: ['weekly-digest', 'new-challenges'],
-      },
-      { onConflict: 'email' }
-    );
-    if (error) throw new Error(error.message);
+    const { error } = await supabase.from('newsletter_subscribers').insert({
+      email,
+      first_name: firstName ?? null,
+      status: 'confirmed',
+      preferences: ['weekly-digest', 'new-challenges'],
+    });
+    // Ignore duplicate-email errors silently (already subscribed)
+    if (error && error.code !== '23505') throw new Error(error.message);
   }
 
   async unsubscribe(email: string): Promise<void> {

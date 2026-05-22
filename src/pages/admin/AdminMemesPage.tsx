@@ -6,6 +6,7 @@ const AdminMemesPage = () => {
   const [memes, setMemes]       = useState<MemeCard[]>([]);
   const [loading, setLoading]   = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing]   = useState<MemeCard | null>(null);
   const [title, setTitle]       = useState('');
   const [category, setCategory] = useState('');
   const [file, setFile]         = useState<File | null>(null);
@@ -17,8 +18,12 @@ const AdminMemesPage = () => {
   const load = async () => { setLoading(true); setMemes(await memesService.getAllMemes()); setLoading(false); };
   useEffect(() => { load(); }, []);
 
+  const openNew = () => { setEditing(null); setTitle(''); setCategory(''); setFile(null); setPreview(null); setShowForm(true); };
+  const openEdit = (m: MemeCard) => { setEditing(m); setTitle(m.title); setCategory(m.category ?? ''); setFile(null); setPreview(m.imageUrl); setShowForm(true); };
+
   const closeForm = () => {
     setShowForm(false);
+    setEditing(null);
     setTitle('');
     setCategory('');
     setFile(null);
@@ -34,11 +39,18 @@ const AdminMemesPage = () => {
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file) return;
     setSaving(true);
     try {
-      const imageUrl = await memesService.uploadImage(file);
-      await memesService.createMeme({ title, imageUrl, category });
+      if (editing) {
+        // Edit mode: optionally replace image, always update title/category
+        let imageUrl = editing.imageUrl;
+        if (file) imageUrl = await memesService.uploadImage(file);
+        await memesService.updateMeme(editing.id, { title, category, imageUrl });
+      } else {
+        if (!file) return;
+        const imageUrl = await memesService.uploadImage(file);
+        await memesService.createMeme({ title, imageUrl, category });
+      }
       closeForm();
       await load();
     } finally {
@@ -60,7 +72,7 @@ const AdminMemesPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Meme Lab</h1>
           <p className="text-sm text-gray-500 mt-0.5">{memes.length} memes in the lab</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-primary text-black text-sm font-semibold rounded-lg hover:bg-yellow-300 transition-colors">
+        <button onClick={openNew} className="px-4 py-2 bg-primary text-black text-sm font-semibold rounded-lg hover:bg-yellow-300 transition-colors">
           + Upload Meme
         </button>
       </div>
@@ -82,12 +94,20 @@ const AdminMemesPage = () => {
               <div className="p-3">
                 <p className="text-sm font-medium text-gray-900 truncate">{m.title}</p>
                 {m.category && <p className="text-xs text-gray-400 mt-0.5">{m.category}</p>}
-                <button
-                  onClick={() => setDeleteId(m.id)}
-                  className="mt-2 text-xs text-red-400 hover:text-red-600 font-medium transition-colors"
-                >
-                  Delete
-                </button>
+                <div className="mt-2 flex gap-3">
+                  <button
+                    onClick={() => openEdit(m)}
+                    className="text-xs text-primary hover:text-yellow-500 font-medium transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(m.id)}
+                    className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -99,7 +119,7 @@ const AdminMemesPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">Upload Meme</h2>
+              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Edit Meme' : 'Upload Meme'}</h2>
               <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
@@ -110,10 +130,12 @@ const AdminMemesPage = () => {
                 </div>
               )}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Image</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  {editing ? 'Replace Image (optional)' : 'Image'}
+                </label>
                 <input
                   ref={fileRef}
-                  required
+                  required={!editing}
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
@@ -143,10 +165,10 @@ const AdminMemesPage = () => {
                 <button type="button" onClick={closeForm} className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50">Cancel</button>
                 <button
                   type="submit"
-                  disabled={saving || !file}
+                  disabled={saving || (!editing && !file)}
                   className="px-4 py-2 bg-primary text-black text-sm font-semibold rounded-lg hover:bg-yellow-300 disabled:opacity-50 transition-colors"
                 >
-                  {saving ? 'Uploading…' : 'Upload'}
+                  {saving ? (editing ? 'Saving…' : 'Uploading…') : (editing ? 'Save Changes' : 'Upload')}
                 </button>
               </div>
             </form>
