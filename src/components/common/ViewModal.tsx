@@ -136,9 +136,10 @@ function ChallengeView({ ch, diffLabel }: { ch: Challenge; diffLabel?: (d: strin
 
   const [handle, setHandle]     = useState('');
   const [code, setCode]         = useState('');
-  const [lang, setLang]         = useState('python');
+  const [lang, setLang]         = useState(ch.language ?? 'python');
   const [status, setStatus]     = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
+  const langLocked = Boolean(ch.language);
   const langLabel = LANGUAGES.find(l => l.value === lang)?.label ?? lang;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -176,6 +177,15 @@ function ChallengeView({ ch, diffLabel }: { ch: Challenge; diffLabel?: (d: strin
           {ch.tags.map((t) => <span key={t} className="vm-topic-pill">{t}</span>)}
         </div>
       )}
+
+      {/* ── Code snippet to review / fix ── */}
+      {ch.codeSnippet && (
+        <div className="vm-code-block">
+          <div className="vm-code-label">// code_to_review</div>
+          <pre className="vm-code-pre"><code>{ch.codeSnippet}</code></pre>
+        </div>
+      )}
+
       {ch.winnerHandle && (
         <div className="vm-winner">
           🏆 Winner: <strong>{ch.winnerHandle}</strong>
@@ -219,6 +229,7 @@ function ChallengeView({ ch, diffLabel }: { ch: Challenge; diffLabel?: (d: strin
               onLanguageChange={setLang}
               hasError={status === 'error' && !code.trim()}
               minRows={10}
+              fixedLanguage={langLocked}
             />
             <div className="vm-submit-footer">
               {status === 'error' && (

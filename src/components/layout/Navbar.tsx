@@ -24,8 +24,14 @@ export default function Navbar() {
 
   const handleNavClick = (e: React.MouseEvent, link: NavLink) => {
     if (isHome) {
-      e.preventDefault();
-      document.getElementById(link.sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      const el = document.getElementById(link.sectionId);
+      if (el) {
+        e.preventDefault();
+        const headerOffset = 80;
+        const offsetPosition = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
+      // If no matching section element, let the <a href> navigate to the page normally
     }
   };
 
@@ -52,7 +58,7 @@ export default function Navbar() {
         {NAV_LINKS.map((link) => (
           <li key={link.sectionId}>
             <a
-              href={`/#${link.sectionId}`}
+              href={isHome ? `#${link.sectionId}` : link.path}
               onClick={(e) => handleNavClick(e, link)}
             >
               {link.label}

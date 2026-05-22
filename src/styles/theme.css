@@ -850,6 +850,31 @@ section {
   opacity: 0.8;
 }
 
+/* SECTION "VIEW ALL" CTA ROW */
+.section-cta-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.section-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--border2);
+  color: var(--mid);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.section-view-all:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
 /* MEME SECTION */
 .meme-strip {
   background: var(--bg);
@@ -1500,6 +1525,88 @@ footer {
 .submit-btns {
   display: flex;
   gap: 8px;
+}
+
+/* Participants panel */
+.participants-panel {
+  border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  background: var(--card);
+}
+
+.participants-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.participants-count {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.participants-label {
+  font-size: 0.85rem;
+  color: var(--mid);
+}
+
+.participants-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.participant-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid var(--bg);
+  flex-shrink: 0;
+  cursor: default;
+  transition: transform var(--transition-fast);
+}
+
+.participant-avatar:hover {
+  transform: translateY(-2px);
+  z-index: 1;
+}
+
+.participant-avatar-more {
+  background: var(--border2) !important;
+  color: var(--mid);
+  font-size: 0.65rem;
+}
+
+.participants-handles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.participant-handle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--mid);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.5rem;
+}
+
+.participant-handle-more {
+  color: var(--text-muted, var(--mid));
+  opacity: 0.6;
 }
 
 /* Submit form wrapper */

@@ -24,28 +24,41 @@ export default function ChallengesPage() {
   const [solution, setSolution]   = useState('');
   const [language, setLanguage]   = useState('python');
   const [handle, setHandle]       = useState('');
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'submitting' | 'error'>('idle');
-  const [submitted, setSubmitted] = useState<SubmittedInfo | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'submitting' | 'error'>('idle');  const [submitted, setSubmitted] = useState<SubmittedInfo | null>(null);
+  const [submitters, setSubmitters] = useState<{ handle: string }[]>([]);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Pre-fill handle from logged-in user's display name
+  // Pre-fill handle from logged-in user's display name; always keep in sync
+  const userHandle =
+    (user?.user_metadata?.display_name as string | undefined) ??
+    user?.email?.split('@')[0] ??
+    '';
+
   useEffect(() => {
-    if (user && !handle) {
-      const name =
-        (user.user_metadata?.display_name as string | undefined) ??
-        user.email?.split('@')[0] ??
-        '';
-      setHandle(name);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    if (userHandle) setHandle(userHandle);
+  }, [userHandle]);
+
+  // Sync language from the live challenge (if the challenge specifies one)
+  useEffect(() => {
+    if (liveChallenge?.language) setLanguage(liveChallenge.language);
+  }, [liveChallenge?.language]);
+
+  const challengeLanguageLocked = Boolean(liveChallenge?.language);
+
+  // Fetch public submitter list for the live challenge
+  useEffect(() => {
+    if (!liveChallenge?.id) return;
+    challengesService.getSubmitters(liveChallenge.id)
+      .then(setSubmitters)
+      .catch(() => setSubmitters([]));
+  }, [liveChallenge?.id]);
 
   const pastChallenges = challenges.filter((c) => !c.featured);
 
   const resetForm = () => {
     setSolution('');
-    setLanguage('python');
-    setHandle('');
+    setLanguage(liveChallenge?.language ?? 'python');
+    // preserve handle — it stays synced from the logged-in user
     setSubmitStatus('idle');
     setShowForm(false);
   };
@@ -76,6 +89,8 @@ export default function ChallengesPage() {
       week:           liveChallenge.week,
     });
     resetForm();
+    // refresh submitters list
+    challengesService.getSubmitters(liveChallenge.id).then(setSubmitters).catch(() => {});
     // scroll to success panel
     setTimeout(() => {
       document.getElementById('submission-success')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -168,6 +183,47 @@ export default function ChallengesPage() {
             </div>
           )}
 
+          {/* ── Participants Panel ───────────────────────────────────── */}
+          {liveChallenge && submitters.length > 0 && (
+            <div className="participants-panel">
+              <div className="participants-heading">
+                <span className="participants-count">{submitters.length}</span>
+                <span className="participants-label">
+                  {submitters.length === 1 ? 'dev submitted' : 'devs submitted'}
+                </span>
+              </div>
+              <div className="participants-avatars">
+                {submitters.slice(0, 20).map(({ handle }) => {
+                  const initials = handle.replace(/^@/, '').slice(0, 2).toUpperCase();
+                  const hue = [...handle].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+                  return (
+                    <div
+                      key={handle}
+                      className="participant-avatar"
+                      style={{ background: `hsl(${hue},55%,35%)` }}
+                      title={handle}
+                    >
+                      {initials}
+                    </div>
+                  );
+                })}
+                {submitters.length > 20 && (
+                  <div className="participant-avatar participant-avatar-more">
+                    +{submitters.length - 20}
+                  </div>
+                )}
+              </div>
+              <div className="participants-handles">
+                {submitters.slice(0, 8).map(({ handle }) => (
+                  <span key={handle} className="participant-handle">{handle.startsWith('@') ? handle : `@${handle}`}</span>
+                ))}
+                {submitters.length > 8 && (
+                  <span className="participant-handle participant-handle-more">+{submitters.length - 8} more</span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── Submission Form ──────────────────────────────────────── */}
           {showForm && (
             <div ref={formRef} className="submit-form-wrap">
@@ -201,7 +257,10 @@ export default function ChallengesPage() {
                 <div className="submit-field">
                   <label className="submit-label">
                     Your Solution&nbsp;
-                    <span className="submit-label-hint">— pick a language, then paste or write your code</span>
+                    {challengeLanguageLocked
+                      ? <span className="submit-label-hint">— write your {liveChallenge?.language} solution below</span>
+                      : <span className="submit-label-hint">— pick a language, then paste or write your code</span>
+                    }
                   </label>
                   <CodeEditor
                     value={solution}
@@ -210,6 +269,7 @@ export default function ChallengesPage() {
                     onLanguageChange={setLanguage}
                     hasError={submitStatus === 'error' && !solution.trim()}
                     minRows={14}
+                    fixedLanguage={challengeLanguageLocked}
                   />
                 </div>
 

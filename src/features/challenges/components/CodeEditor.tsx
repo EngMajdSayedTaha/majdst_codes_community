@@ -25,6 +25,8 @@ interface CodeEditorProps {
   onLanguageChange: (lang: string) => void;
   hasError?: boolean;
   minRows?: number;
+  /** When true, the language is fixed by the challenge and cannot be changed */
+  fixedLanguage?: boolean;
 }
 
 export default function CodeEditor({
@@ -34,6 +36,7 @@ export default function CodeEditor({
   onLanguageChange,
   hasError = false,
   minRows = 12,
+  fixedLanguage = false,
 }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -79,22 +82,30 @@ export default function CodeEditor({
         </div>
 
         <div className="code-editor-lang-wrap">
-          <button
-            type="button"
-            className="code-editor-lang-btn"
-            onClick={() => setLangOpen(p => !p)}
-            aria-haspopup="listbox"
-            aria-expanded={langOpen ? 'true' : 'false'}
-          >
-            <span className="lang-icon">{selectedLang.icon}</span>
-            <span className="lang-label">{selectedLang.label}</span>
-            <span className="lang-ext">{selectedLang.ext}</span>
-            <svg className={`lang-chevron${langOpen ? ' open' : ''}`} width="10" height="10" viewBox="0 0 10 10">
-              <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-            </svg>
-          </button>
+          {fixedLanguage ? (
+            <span className="code-editor-lang-btn" style={{ cursor: 'default', opacity: 0.85 }} title="Language set by challenge">
+              <span className="lang-icon">{selectedLang.icon}</span>
+              <span className="lang-label">{selectedLang.label}</span>
+              <span className="lang-ext">{selectedLang.ext}</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="code-editor-lang-btn"
+              onClick={() => setLangOpen(p => !p)}
+              aria-haspopup="listbox"
+              aria-expanded={langOpen ? 'true' : 'false'}
+            >
+              <span className="lang-icon">{selectedLang.icon}</span>
+              <span className="lang-label">{selectedLang.label}</span>
+              <span className="lang-ext">{selectedLang.ext}</span>
+              <svg className={`lang-chevron${langOpen ? ' open' : ''}`} width="10" height="10" viewBox="0 0 10 10">
+                <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
 
-          {langOpen && (
+          {!fixedLanguage && langOpen && (
             <ul className="code-editor-lang-dropdown" role="listbox" aria-label="Select programming language">
               {LANGUAGES.map(lang => (
                 <li

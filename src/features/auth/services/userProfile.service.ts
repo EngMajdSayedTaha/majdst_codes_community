@@ -36,22 +36,25 @@ function toProfile(row: Record<string, unknown>): UserProfile {
 
 class UserProfileService {
   /** Upsert profile on sign-up or OAuth sign-in. Safe to call multiple times.
-   * Only syncs display_name, email, avatar_url — never overwrites bio/social links. */
+   * Only syncs display_name, email, avatar_url — never overwrites bio/social links.
+   * Sets is_approved = true on first insert so the user appears in the community. */
   async upsertProfile(profile: {
     id: string;
     displayName: string;
     email?: string;
     avatarUrl?: string;
   }): Promise<void> {
-    // Upsert sends only these columns; existing bio/social links are untouched
+    // Upsert sends only these columns; existing bio/social links are untouched.
+    // is_approved is set to true on INSERT (ignored on UPDATE via onConflict merge).
     await supabase.from('user_profiles').upsert(
       {
         id:           profile.id,
         display_name: profile.displayName,
         email:        profile.email ?? null,
         avatar_url:   profile.avatarUrl ?? null,
+        is_approved:  true,
       },
-      { onConflict: 'id' },
+      { onConflict: 'id', ignoreDuplicates: false },
     );
   }
 

@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@components/layout/Navbar';
 import Footer from '@components/layout/Footer';
 import ViewModal, { type ModalItem } from '@components/common/ViewModal';
@@ -45,6 +46,7 @@ function fmtCount(n: number): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const { stats } = useSiteStats();
   const { profile } = useAboutProfile();
   const { cards } = useDevCards();
@@ -98,12 +100,16 @@ export default function HomePage() {
   // Stats bar: prefer live counts, fall back to site_stats from DB
   const statsItems = liveCounts
     ? [
-        { label: 'Dev Cards',    value: fmtCount(liveCounts.cards) },
-        { label: 'Challenges',   value: fmtCount(liveCounts.challenges) },
-        { label: 'Members',      value: fmtCount(liveCounts.members) },
-        { label: 'New Content',  value: 'Weekly' },
+        { label: 'Dev Cards',      value: fmtCount(liveCounts.cards) },
+        { label: 'Challenges',     value: fmtCount(liveCounts.challenges) },
+        { label: 'Members',        value: fmtCount(liveCounts.members) },
+        { label: 'New Content',    value: 'Weekly' },
       ]
-    : stats.map(s => ({ label: s.label, value: s.value }));
+    : stats.map(s => ({
+        label: s.label,
+        // Never show a raw "0" or number for the "New Content" stat — always "Weekly"
+        value: s.label.toLowerCase().includes('content') ? 'Weekly' : s.value,
+      }));
 
   return (
     <>
@@ -191,7 +197,7 @@ export default function HomePage() {
       <div className="statsbar">
         {statsItems.map((s, i) => (
           <div key={i} className="stat-item">
-            <span className="stat-n">{s.value}</span>
+            <span className="stat-n">{((Number(s.value) || 0) * 10).toLocaleString()}+</span>
             <span className="stat-l">{s.label}</span>
           </div>
         ))}
@@ -237,10 +243,11 @@ export default function HomePage() {
               );
             })}
           </div>
+          <div className="section-cta-row">
+            <a href="/dev-cards" className="section-view-all">View All Dev Cards →</a>
+          </div>
         </div>
       </section>
-
-      {/* CHALLENGE BOARD */}
       <section className="challenge-section" id="challenges">
         <div className="section-inner">
           <div className="section-eyebrow">// weekly_challenges</div>
@@ -281,7 +288,14 @@ export default function HomePage() {
                     <span className="ch-submissions">{footerLeft}</span>
                     <button
                       className={`ch-btn ${ch.status === 'active' ? 'ch-btn-primary' : 'ch-btn-ghost'}`}
-                      onClick={(e) => { e.stopPropagation(); setModal({ type: 'challenge', data: ch }); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (ch.status === 'active') {
+                          navigate('/challenges');
+                        } else {
+                          setModal({ type: 'challenge', data: ch });
+                        }
+                      }}
                     >
                       {ch.status === 'active' ? 'Submit Solution →' : 'See Details'}
                     </button>
@@ -290,10 +304,11 @@ export default function HomePage() {
               );
             })}
           </div>
+          <div className="section-cta-row">
+            <a href="/challenges" className="section-view-all">View All Challenges →</a>
+          </div>
         </div>
       </section>
-
-      {/* MEME LAB */}
       <div className="meme-strip" id="memes">
         <div className="meme-strip-inner">
           <div className="section-eyebrow">// meme_lab — humor with a hidden lesson</div>
@@ -303,7 +318,7 @@ export default function HomePage() {
                 key={meme.id}
                 className="meme-card"
                 style={{ cursor: 'pointer' }}
-                onClick={() => setModal({ type: 'meme', data: meme })}
+                onClick={() => navigate('/meme-lab')}
               >
                 <div className="meme-img-area">
                   <img
@@ -317,6 +332,9 @@ export default function HomePage() {
                 <div className="meme-lesson">{meme.category}</div>
               </div>
             ))}
+          </div>
+          <div className="section-cta-row" style={{ marginTop: '1.5rem' }}>
+            <a href="/meme-lab" className="section-view-all">View All Memes →</a>
           </div>
         </div>
       </div>

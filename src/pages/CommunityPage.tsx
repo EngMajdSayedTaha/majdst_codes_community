@@ -79,7 +79,8 @@ export default function CommunityPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    userProfileService.getApprovedProfiles()
+    // Show all registered members (approved or not) — the admin can feature specific ones
+    userProfileService.getAllProfiles()
       .then(setMembers)
       .catch(() => setMembers([]))
       .finally(() => setLoading(false));

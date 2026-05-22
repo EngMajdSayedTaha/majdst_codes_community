@@ -30,6 +30,9 @@ export interface Challenge {
   status?: 'upcoming' | 'active' | 'completed';
   link?: string;
   tags?: string[];
+  language?: string;
+  /** Buggy / starter code the participant must fix or extend */
+  codeSnippet?: string;
   winnerHandle?: string;
   startDate?: string;
   endDate?: string;

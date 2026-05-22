@@ -5,7 +5,8 @@ import type { Challenge } from '@types';
 const EMPTY: Omit<Challenge, 'id'> = {
   title: '', description: '', difficulty: 'medium', reward: 0,
   featured: false, week: 1, status: 'active',
-  date: new Date().toISOString(), link: '', tags: [], winnerHandle: '', isPublished: true,
+  date: new Date().toISOString(), link: '', tags: [], winnerHandle: '',
+  language: '', codeSnippet: '', isPublished: true,
 };
 
 const DIFF: Record<string, string> = {
@@ -148,6 +149,20 @@ const AdminChallengesPage = () => {
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Tags (comma-sep)</label>
                 <input className={INPUT} value={tagsRaw} onChange={e => setTagsRaw(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Language (e.g. typescript)</label>
+                <input className={INPUT} value={form.language ?? ''} placeholder="python / typescript / javascript…" onChange={e => setForm(f => ({ ...f, language: e.target.value }))} />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Code Snippet (buggy / starter code to review)</label>
+                <textarea
+                  className={`${INPUT} resize-y font-mono text-xs`}
+                  rows={8}
+                  placeholder="// Paste the buggy or starter code here…"
+                  value={form.codeSnippet ?? ''}
+                  onChange={e => setForm(f => ({ ...f, codeSnippet: e.target.value }))}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Difficulty</label>

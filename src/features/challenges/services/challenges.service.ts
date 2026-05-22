@@ -14,6 +14,8 @@ function toChallenge(row: Record<string, unknown>): Challenge {
     status: row.status as Challenge['status'],
     link: row.link as string | undefined,
     tags: (row.tags as string[]) ?? [],
+    language: row.language as string | undefined,
+    codeSnippet: row.code_snippet as string | undefined,
     winnerHandle: row.winner_handle as string | undefined,
     startDate: row.start_date as string | undefined,
     endDate: row.end_date as string | undefined,
@@ -34,6 +36,8 @@ function toRow(c: Omit<Challenge, 'id'> | Partial<Challenge>) {
   if (c.status !== undefined) row.status = c.status;
   if (c.link !== undefined) row.link = c.link;
   if (c.tags !== undefined) row.tags = c.tags;
+  if (c.language !== undefined) row.language = c.language;
+  if (c.codeSnippet !== undefined) row.code_snippet = c.codeSnippet;
   if (c.winnerHandle !== undefined) row.winner_handle = c.winnerHandle;
   if (c.startDate !== undefined) row.start_date = c.startDate;
   if (c.endDate !== undefined) row.end_date = c.endDate;
@@ -152,6 +156,26 @@ class ChallengesService {
       .update({ status, admin_notes: adminNotes })
       .eq('id', id);
     if (error) throw new Error(error.message);
+  }
+
+  /** Returns unique submitters (handle) for a given challenge, for public display. */
+  async getSubmitters(challengeId: string): Promise<{ handle: string }[]> {
+    const { data, error } = await supabase
+      .from('challenge_submissions')
+      .select('handle')
+      .eq('challenge_id', challengeId)
+      .order('submitted_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    // Deduplicate by handle (keep first occurrence = most recent)
+    const seen = new Set<string>();
+    const unique: { handle: string }[] = [];
+    for (const row of (data ?? [])) {
+      if (!seen.has(row.handle)) {
+        seen.add(row.handle);
+        unique.push({ handle: row.handle });
+      }
+    }
+    return unique;
   }
 }
 
