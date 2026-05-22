@@ -34,9 +34,8 @@ class NewsletterService {
   async getSubscribers() {
     const { data, error } = await supabase
       .from('newsletter_subscribers')
-      .select('*')
-      .order('subscribed_at', { ascending: false });
-    if (error) throw new Error(error.message);
+      .select('id, email');
+    if (error) console.error('[newsletter] getSubscribers error:', error);
     return data ?? [];
   }
 }
