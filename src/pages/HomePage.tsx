@@ -1,13 +1,14 @@
-﻿import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect, FormEvent } from 'react';
 import Navbar from '@components/layout/Navbar';
 import Footer from '@components/layout/Footer';
+import ViewModal, { type ModalItem } from '@components/common/ViewModal';
 import { useSiteStats } from '@features/site-settings/hooks/useSiteStats';
 import { useAboutProfile } from '@features/site-settings/hooks/useAboutProfile';
 import { useDevCards } from '@features/dev-cards/hooks/useDevCards';
 import { useChallenges } from '@features/challenges/hooks/useChallenges';
 import { useMemes } from '@features/memes/hooks/useMemes';
 import { newsletterService } from '@features/newsletter/services/newsletter.service';
+import { siteSettingsService } from '@features/site-settings/services/siteSettings.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,10 +37,14 @@ function fmtSaves(n?: number): string {
   return n >= 1000 ? `★ ${(n / 1000).toFixed(1)}K saves` : `★ ${n} saves`;
 }
 
+function fmtCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K+`;
+  return String(n);
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const { stats } = useSiteStats();
   const { profile } = useAboutProfile();
   const { cards } = useDevCards();
@@ -47,18 +52,29 @@ export default function HomePage() {
   const { memes } = useMemes();
   const [email, setEmail] = useState('');
   const [subStatus, setSubStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [modal, setModal] = useState<ModalItem | null>(null);
+  const [toast, setToast] = useState('');
+  const [liveCounts, setLiveCounts] = useState<{ cards: number; challenges: number; members: number } | null>(null);
+
+  useEffect(() => {
+    siteSettingsService.getLiveCounts()
+      .then(setLiveCounts)
+      .catch(() => {}); // silently fall back to site_stats
+  }, []);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2800);
+  };
+
   const handleSubscribe = async (e: FormEvent) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setSubStatus('error');
-      return;
-    }
+    if (!emailRegex.test(email)) { setSubStatus('error'); return; }
     try {
       await newsletterService.subscribe(email);
       setSubStatus('success');
@@ -69,17 +85,36 @@ export default function HomePage() {
     }
   };
 
-  const handleShareCard = (title: string) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(`${title} — majdst.codes`)
-        .then(() => alert('Card link copied!'))
-        .catch(() => {});
+  const handleShare = (e: React.MouseEvent, title: string, path: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}${path}`;
+    if (navigator.share) {
+      navigator.share({ title, text: `Check this out on majdst.codes`, url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).then(() => showToast('🔗 Link copied to clipboard!')).catch(() => {});
     }
   };
+
+  // Stats bar: prefer live counts, fall back to site_stats from DB
+  const statsItems = liveCounts
+    ? [
+        { label: 'Dev Cards',    value: fmtCount(liveCounts.cards) },
+        { label: 'Challenges',   value: fmtCount(liveCounts.challenges) },
+        { label: 'Members',      value: fmtCount(liveCounts.members) },
+        { label: 'New Content',  value: 'Weekly' },
+      ]
+    : stats.map(s => ({ label: s.label, value: s.value }));
 
   return (
     <>
       <Navbar />
+      <ViewModal
+        item={modal}
+        onClose={() => setModal(null)}
+        tagLabel={(k) => TAG_MAP[k]?.label ?? k}
+        diffLabel={(d) => DIFF_MAP[d]?.label ?? d}
+      />
+      {toast && <div className="share-toast">{toast}</div>}
 
       {/* HERO */}
       <section className="hero">
@@ -108,7 +143,11 @@ export default function HomePage() {
           </div>
 
           {/* Hero Card: Live Challenge Preview (from DB featured challenge) */}
-          <div className="hero-card">
+          <div
+            className="hero-card"
+            style={{ cursor: 'pointer' }}
+            onClick={() => featured && setModal({ type: 'challenge', data: featured })}
+          >
             <div className="hero-card-bar">
               <div className="dot dot-r"></div>
               <div className="dot dot-y"></div>
@@ -148,24 +187,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* STATS BAR */}
+      {/* STATS BAR — live counts from DB */}
       <div className="statsbar">
-        {stats.length > 0
-          ? stats.map((stat) => (
-              <div key={stat.id} className="stat-item">
-                <span className="stat-n">{stat.value}</span>
-                <span className="stat-l">{stat.label}</span>
-              </div>
-            ))
-          : (
-              <>
-                <div className="stat-item"><span className="stat-n">42</span><span className="stat-l">Dev Cards</span></div>
-                <div className="stat-item"><span className="stat-n">17</span><span className="stat-l">Challenges</span></div>
-                <div className="stat-item"><span className="stat-n">1.2K</span><span className="stat-l">Community Members</span></div>
-                <div className="stat-item"><span className="stat-n">Weekly</span><span className="stat-l">New Content</span></div>
-              </>
-            )
-        }
+        {statsItems.map((s, i) => (
+          <div key={i} className="stat-item">
+            <span className="stat-n">{s.value}</span>
+            <span className="stat-l">{s.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* DEV CARDS */}
@@ -180,7 +209,12 @@ export default function HomePage() {
             {cards.map((card) => {
               const tag = TAG_MAP[card.tagKey ?? ''] ?? { cls: 'tag-ts', label: card.tagKey ?? '' };
               return (
-                <div className="dev-card" key={card.id} onClick={() => navigate('/dev-cards')}>
+                <div
+                  className="dev-card"
+                  key={card.id}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setModal({ type: 'card', data: card })}
+                >
                   <div className="dev-card-top">
                     <div className="dev-card-icon">{card.icon}</div>
                     <span className={`dev-card-tag ${tag.cls}`}>{tag.label}</span>
@@ -194,7 +228,7 @@ export default function HomePage() {
                     <span className="card-saves">{fmtSaves(card.savesCount)}</span>
                     <button
                       className="card-share"
-                      onClick={(e) => { e.stopPropagation(); handleShareCard(card.title); }}
+                      onClick={(e) => handleShare(e, card.title, '/dev-cards')}
                     >
                       Share Card
                     </button>
@@ -222,13 +256,14 @@ export default function HomePage() {
                 : `Week #${ch.week}`;
               const footerLeft = ch.status === 'completed' && ch.winnerHandle
                 ? `Winner: ${ch.winnerHandle}`
-                : ch.status === 'active'
-                ? 'Active Challenge'
-                : '';
-              const btnLabel = ch.status === 'active' ? 'Submit Solution →' : 'See Solution';
-              const btnClass = ch.status === 'active' ? 'ch-btn-primary' : 'ch-btn-ghost';
+                : ch.status === 'active' ? 'Active Challenge' : '';
               return (
-                <div key={ch.id} className={`ch-card${ch.featured ? ' featured' : ''}`}>
+                <div
+                  key={ch.id}
+                  className={`ch-card${ch.featured ? ' featured' : ''}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setModal({ type: 'challenge', data: ch })}
+                >
                   <div className="ch-header">
                     <span className="ch-week">{weekLabel}</span>
                     <span className={`ch-difficulty ${diff.cls}`}>{diff.label}</span>
@@ -245,10 +280,10 @@ export default function HomePage() {
                   <div className="ch-footer">
                     <span className="ch-submissions">{footerLeft}</span>
                     <button
-                      className={`ch-btn ${btnClass}`}
-                      onClick={() => navigate('/challenges')}
+                      className={`ch-btn ${ch.status === 'active' ? 'ch-btn-primary' : 'ch-btn-ghost'}`}
+                      onClick={(e) => { e.stopPropagation(); setModal({ type: 'challenge', data: ch }); }}
                     >
-                      {btnLabel}
+                      {ch.status === 'active' ? 'Submit Solution →' : 'See Details'}
                     </button>
                   </div>
                 </div>
@@ -264,7 +299,12 @@ export default function HomePage() {
           <div className="section-eyebrow">// meme_lab — humor with a hidden lesson</div>
           <div className="meme-scroll">
             {memes.map((meme) => (
-              <div key={meme.id} className="meme-card" onClick={() => navigate('/meme-lab')}>
+              <div
+                key={meme.id}
+                className="meme-card"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setModal({ type: 'meme', data: meme })}
+              >
                 <div className="meme-img-area">
                   <img
                     src={meme.imageUrl}
@@ -287,7 +327,7 @@ export default function HomePage() {
           <div className="majd-avatar">
             <div className="majd-photo-placeholder">
               <img
-                src={profile?.avatarUrl ?? '/images/profile.jpg'}
+                src={profile?.avatarUrl || '/images/profile.jpg'}
                 alt={profile?.name ?? 'Majd'}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 className="profile-avatar-large w-full h-full object-cover"
@@ -356,3 +396,4 @@ export default function HomePage() {
     </>
   );
 }
+

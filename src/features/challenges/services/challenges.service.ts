@@ -124,6 +124,7 @@ class ChallengesService {
       challenge_id: submission.challengeId,
       handle: submission.handle,
       solution: submission.solution,
+      language: submission.language ?? 'other',
     });
     if (error) throw new Error(error.message);
   }
@@ -138,6 +139,7 @@ class ChallengesService {
       challengeId: r.challenge_id as string,
       handle: r.handle as string,
       solution: r.solution as string,
+      language: (r.language as string) ?? 'other',
       status: r.status as ChallengeSubmission['status'],
       adminNotes: r.admin_notes as string | undefined,
       submittedAt: r.submitted_at as string,

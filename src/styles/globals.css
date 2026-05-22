@@ -283,3 +283,392 @@ body::after {
     padding: var(--spacing-md);
   }
 }
+
+/* ════════════════════════════════════════════
+   VIEW MODAL — animated card/challenge/meme popup
+   ════════════════════════════════════════════ */
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalCardIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.view-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalOverlayIn 0.2s ease both;
+}
+
+.view-modal-card {
+  position: relative;
+  background: #0e0e1a;
+  border: 1px solid rgba(249, 228, 0, 0.15);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: modalCardIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(249,228,0,0.3) transparent;
+}
+
+.view-modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: 16px 16px 0 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  border-radius: 8px;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  z-index: 10;
+}
+.view-modal-close:hover {
+  background: rgba(249,228,0,0.15);
+  color: #F9E400;
+}
+
+/* ── Dev Card Modal ── */
+.vm-devcard {
+  padding: 20px 24px 28px;
+  clear: both;
+}
+.vm-devcard-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.vm-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.vm-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border: 1px solid;
+  border-radius: 20px;
+  opacity: 0.9;
+}
+.vm-time {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+}
+.vm-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+.vm-desc {
+  font-size: 14px;
+  color: #a0a0b0;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.vm-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.vm-topic-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  background: rgba(249,228,0,0.08);
+  border: 1px solid rgba(249,228,0,0.2);
+  border-radius: 20px;
+  color: #F9E400;
+}
+.vm-funfact {
+  background: rgba(255,255,255,0.04);
+  border-left: 3px solid #F9E400;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #c0c0d0;
+  font-style: italic;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+.vm-funfact-icon {
+  font-style: normal;
+  flex-shrink: 0;
+}
+.vm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.vm-saves {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #F9E400;
+}
+.vm-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #F9E400;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid rgba(249,228,0,0.4);
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.vm-link:hover {
+  background: rgba(249,228,0,0.1);
+}
+
+/* ── Challenge Modal ── */
+.vm-challenge {
+  padding: 20px 24px 28px;
+  clear: both;
+}
+.vm-ch-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.vm-ch-week {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.vm-ch-diff {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 20px;
+}
+.vm-ch-status {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.status-active {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+}
+.status-done {
+  background: rgba(34,197,94,0.12);
+  color: #4ade80;
+}
+.vm-winner {
+  font-size: 13px;
+  color: #c0c0d0;
+  background: rgba(249,228,0,0.08);
+  border: 1px solid rgba(249,228,0,0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+.vm-winner strong {
+  color: #F9E400;
+}
+
+/* ── ViewModal Submission Form ── */
+.vm-submit-form {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vm-submit-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 2px;
+}
+.vm-input {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color var(--transition-normal);
+}
+.vm-input::placeholder { color: var(--muted); }
+.vm-input:focus { border-color: var(--primary); }
+.vm-input-error { border-color: var(--pink) !important; }
+
+.vm-submit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.vm-error-msg {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--pink);
+}
+.vm-submit-btn {
+  margin-left: auto;
+}
+
+/* ── ViewModal Success State ── */
+.vm-success {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.vm-success-icon {
+  font-size: 24px;
+  color: var(--primary);
+  animation: ss-pulse 2s ease-in-out infinite;
+}
+.vm-success-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.vm-success-sub {
+  font-size: 13px;
+  color: var(--mid);
+  line-height: 1.6;
+}
+.vm-success-sub strong { color: var(--primary); }
+
+.vm-success-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-top: 4px;
+}
+.vm-step-done    { color: var(--primary); }
+.vm-step-pending { color: var(--muted); }
+.vm-step-sep     { color: var(--border2); }
+
+/* ── Meme Modal ── */
+.vm-meme {
+  padding-bottom: 20px;
+  clear: both;
+}
+.vm-meme-img-wrap {
+  width: 100%;
+  max-height: 360px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vm-meme-img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.3s;
+}
+.vm-meme-body {
+  padding: 16px 24px;
+}
+.vm-meme-cat {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #F9E400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+}
+
+/* ── Toast notification ── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+.share-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  background: #1a1a2e;
+  border: 1px solid rgba(249,228,0,0.3);
+  color: #F9E400;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  animation: toastIn 0.2s ease both;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .view-modal-card {
+    max-height: 94vh;
+    border-radius: 12px;
+  }
+  .vm-devcard, .vm-challenge {
+    padding: 16px 18px 24px;
+  }
+  .vm-title {
+    font-size: 17px;
+  }
+}

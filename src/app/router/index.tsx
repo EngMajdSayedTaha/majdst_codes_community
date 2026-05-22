@@ -8,6 +8,7 @@ import MemeLabPage from '@pages/MemeLabPage';
 import PrivacyPage from '@pages/PrivacyPage';
 import CookiePolicyPage from '@pages/CookiePolicyPage';
 import NotFoundPage from '@pages/NotFoundPage';
+import AuthCallbackPage from '@pages/AuthCallbackPage';
 // Admin
 import ProtectedRoute from '@features/admin/components/ProtectedRoute';
 import AdminLayout from '@features/admin/components/AdminLayout';
@@ -20,6 +21,8 @@ import AdminSubmissionsPage from '@pages/admin/AdminSubmissionsPage';
 import AdminMemesPage from '@pages/admin/AdminMemesPage';
 import AdminNewsletterPage from '@pages/admin/AdminNewsletterPage';
 import AdminSettingsPage from '@pages/admin/AdminSettingsPage';
+import AdminRegisteredUsersPage from '@pages/admin/AdminRegisteredUsersPage';
+import CommunityPage from '@pages/CommunityPage';
 
 /**
  * Router Configuration for majdst.codes
@@ -46,6 +49,14 @@ const router = createBrowserRouter(
     {
       path: '/meme-lab',
       element: <MemeLabPage />,
+    },
+    {
+      path: '/auth/callback',
+      element: <AuthCallbackPage />,
+    },
+    {
+      path: '/community',
+      element: <CommunityPage />,
     },
     {
       path: '/privacy',
@@ -79,6 +90,7 @@ const router = createBrowserRouter(
             { path: '/admin/memes', element: <AdminMemesPage /> },
             { path: '/admin/newsletter', element: <AdminNewsletterPage /> },
             { path: '/admin/settings', element: <AdminSettingsPage /> },
+            { path: '/admin/registered-users', element: <AdminRegisteredUsersPage /> },
           ],
         },
       ],

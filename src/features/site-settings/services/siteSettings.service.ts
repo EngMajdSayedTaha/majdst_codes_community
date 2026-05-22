@@ -103,6 +103,19 @@ class SiteSettingsService {
     if (error) throw new Error(error.message);
     return toAboutProfile(data);
   }
+
+  async getLiveCounts(): Promise<{ cards: number; challenges: number; members: number }> {
+    const [c1, c2, c3] = await Promise.all([
+      supabase.from('dev_cards').select('*', { count: 'exact', head: true }).eq('is_published', true),
+      supabase.from('challenges').select('*', { count: 'exact', head: true }),
+      supabase.from('newsletter_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'confirmed'),
+    ]);
+    return {
+      cards: c1.count ?? 0,
+      challenges: c2.count ?? 0,
+      members: c3.count ?? 0,
+    };
+  }
 }
 
 export const siteSettingsService = new SiteSettingsService();

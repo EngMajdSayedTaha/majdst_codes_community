@@ -75,6 +75,7 @@ export interface ChallengeSubmission {
   challengeId: string;
   handle: string;
   solution: string;
+  language: string;
   status: 'pending' | 'reviewed' | 'winner';
   adminNotes?: string;
   submittedAt: string;

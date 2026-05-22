@@ -5,6 +5,7 @@ import { supabase } from '@lib/supabaseClient';
 interface DashboardCounts {
   devCards: number;
   community: number;
+  registeredUsers: number;
   challenges: number;
   submissions: number;
   memes: number;
@@ -12,12 +13,13 @@ interface DashboardCounts {
 }
 
 const CARDS = [
-  { key: 'devCards',     label: 'Dev Cards',    icon: '◫', link: '/admin/dev-cards',   accent: 'bg-violet-500', light: 'bg-violet-50 text-violet-700' },
-  { key: 'community',   label: 'Members',       icon: '◈', link: '/admin/community',   accent: 'bg-blue-500',   light: 'bg-blue-50 text-blue-700' },
-  { key: 'challenges',  label: 'Challenges',    icon: '⚡', link: '/admin/challenges',  accent: 'bg-amber-500',  light: 'bg-amber-50 text-amber-700' },
-  { key: 'submissions', label: 'Submissions',   icon: '◻', link: '/admin/submissions', accent: 'bg-teal-500',   light: 'bg-teal-50 text-teal-700' },
-  { key: 'memes',       label: 'Memes',         icon: '◉', link: '/admin/memes',       accent: 'bg-pink-500',   light: 'bg-pink-50 text-pink-700' },
-  { key: 'subscribers', label: 'Subscribers',   icon: '✉', link: '/admin/newsletter',  accent: 'bg-emerald-500',light: 'bg-emerald-50 text-emerald-700' },
+  { key: 'devCards',        label: 'Dev Cards',         icon: '◫', link: '/admin/dev-cards',         accent: 'bg-violet-500', light: 'bg-violet-50 text-violet-700' },
+  { key: 'community',       label: 'Curated Members',   icon: '◈', link: '/admin/community',          accent: 'bg-blue-500',   light: 'bg-blue-50 text-blue-700' },
+  { key: 'registeredUsers', label: 'Registered Users',  icon: '◉', link: '/admin/registered-users',   accent: 'bg-indigo-500', light: 'bg-indigo-50 text-indigo-700' },
+  { key: 'challenges',      label: 'Challenges',         icon: '⚡', link: '/admin/challenges',         accent: 'bg-amber-500',  light: 'bg-amber-50 text-amber-700' },
+  { key: 'submissions',     label: 'Submissions',        icon: '◻', link: '/admin/submissions',        accent: 'bg-teal-500',   light: 'bg-teal-50 text-teal-700' },
+  { key: 'memes',           label: 'Memes',              icon: '▣', link: '/admin/memes',              accent: 'bg-pink-500',   light: 'bg-pink-50 text-pink-700' },
+  { key: 'subscribers',     label: 'Subscribers',        icon: '✉', link: '/admin/newsletter',         accent: 'bg-emerald-500',light: 'bg-emerald-50 text-emerald-700' },
 ] as const;
 
 const AdminDashboardPage = () => {
@@ -25,9 +27,10 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     const load = async () => {
-      const [devCards, community, challenges, submissions, memes, subscribers] = await Promise.all([
+      const [devCards, community, registeredUsers, challenges, submissions, memes, subscribers] = await Promise.all([
         supabase.from('dev_cards').select('id', { count: 'exact' }),
         supabase.from('community_members').select('id', { count: 'exact' }),
+        supabase.from('user_profiles').select('id', { count: 'exact' }),
         supabase.from('challenges').select('id', { count: 'exact' }),
         supabase.from('challenge_submissions').select('id', { count: 'exact' }),
         supabase.from('memes').select('id', { count: 'exact' }),
@@ -36,6 +39,7 @@ const AdminDashboardPage = () => {
       setCounts({
         devCards: devCards.count ?? 0,
         community: community.count ?? 0,
+        registeredUsers: registeredUsers.count ?? 0,
         challenges: challenges.count ?? 0,
         submissions: submissions.count ?? 0,
         memes: memes.count ?? 0,
