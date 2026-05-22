@@ -51,7 +51,7 @@ export default function Navbar() {
           </li>
         ))}
       </ul>
-      <button className="nav-cta" onClick={() => window.open('https://t.me/majdst_codes', '_blank', 'noopener,noreferrer')}>
+      <button className="nav-cta" onClick={() => window.open('https://t.me/+xkErm_DI3-RkOTk8', '_blank', 'noopener,noreferrer')}>
         Join the Community
       </button>
     </nav>
