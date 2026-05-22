@@ -1,98 +1,43 @@
-// Newsletter API Service
-import { httpClient } from '@services/api/httpClient';
-import type { NewsletterSubscription, ApiResponse } from '@types';
+import { supabase } from '@lib/supabaseClient';
 
-const NEWSLETTER_ENDPOINT = '/newsletter';
-
-/**
- * NewsletterService - Handles newsletter subscription and management
- */
 class NewsletterService {
-  /**
-   * Subscribe to newsletter
-   */
-  async subscribe(email: string, firstName?: string): Promise<ApiResponse<void>> {
-    try {
-      const subscription: NewsletterSubscription = {
+  async subscribe(email: string, firstName?: string): Promise<void> {
+    const { error } = await supabase.from('newsletter_subscribers').upsert(
+      {
         email,
-        firstName,
+        first_name: firstName ?? null,
+        status: 'confirmed',
         preferences: ['weekly-digest', 'new-challenges'],
-      };
-      const response = await httpClient.post<ApiResponse<void>>(
-        `${NEWSLETTER_ENDPOINT}/subscribe`,
-        subscription
-      );
-      return response;
-    } catch (error) {
-      console.error('Failed to subscribe to newsletter:', error);
-      throw error;
-    }
+      },
+      { onConflict: 'email' }
+    );
+    if (error) throw new Error(error.message);
   }
 
-  /**
-   * Unsubscribe from newsletter
-   */
-  async unsubscribe(email: string): Promise<ApiResponse<void>> {
-    try {
-      const response = await httpClient.post<ApiResponse<void>>(
-        `${NEWSLETTER_ENDPOINT}/unsubscribe`,
-        { email }
-      );
-      return response;
-    } catch (error) {
-      console.error('Failed to unsubscribe from newsletter:', error);
-      throw error;
-    }
+  async unsubscribe(email: string): Promise<void> {
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .update({ status: 'unsubscribed', unsubscribed_at: new Date().toISOString() })
+      .eq('email', email);
+    if (error) throw new Error(error.message);
   }
 
-  /**
-   * Verify subscription
-   */
-  async verifySubscription(token: string): Promise<ApiResponse<void>> {
-    try {
-      const response = await httpClient.post<ApiResponse<void>>(
-        `${NEWSLETTER_ENDPOINT}/verify`,
-        { token }
-      );
-      return response;
-    } catch (error) {
-      console.error('Failed to verify subscription:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update subscription preferences
-   */
-  async updatePreferences(
-    email: string,
-    preferences: string[]
-  ): Promise<ApiResponse<void>> {
-    try {
-      const response = await httpClient.patch<ApiResponse<void>>(
-        `${NEWSLETTER_ENDPOINT}/preferences`,
-        { email, preferences }
-      );
-      return response;
-    } catch (error) {
-      console.error('Failed to update subscription preferences:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get subscriber count
-   */
   async getSubscriberCount(): Promise<number> {
-    try {
-      const response = await httpClient.get<ApiResponse<{ count: number }>>(
-        `${NEWSLETTER_ENDPOINT}/stats`
-      );
-      return response.data.count;
-    } catch (error) {
-      console.error('Failed to get subscriber count:', error);
-      throw error;
-    }
+    const { count, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'confirmed');
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  }
+
+  async getSubscribers() {
+    const { data, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('subscribed_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
   }
 }
 

@@ -1,3 +1,7 @@
+/* TAILWIND UTILITIES */
+@tailwind components;
+@tailwind utilities;
+
 /* GLOBAL STYLES */
 * {
   box-sizing: border-box;

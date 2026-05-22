@@ -2,6 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@components/layout/Navbar';
 import Footer from '@components/layout/Footer';
+import { useSiteStats } from '@features/site-settings/hooks/useSiteStats';
+import { newsletterService } from '@features/newsletter/services/newsletter.service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -179,6 +181,7 @@ const MEMES: Meme[] = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { stats } = useSiteStats();
   const [email, setEmail] = useState('');
   const [subStatus, setSubStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -186,17 +189,21 @@ export default function HomePage() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubscribe = (e: FormEvent) => {
+  const handleSubscribe = async (e: FormEvent) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setSubStatus('error');
       return;
     }
-    // TODO: wire to real newsletter service
-    setSubStatus('success');
-    setEmail('');
-    setTimeout(() => setSubStatus('idle'), 4000);
+    try {
+      await newsletterService.subscribe(email);
+      setSubStatus('success');
+      setEmail('');
+      setTimeout(() => setSubStatus('idle'), 4000);
+    } catch {
+      setSubStatus('error');
+    }
   };
 
   const handleShareCard = (title: string) => {
@@ -272,10 +279,22 @@ export default function HomePage() {
 
       {/* STATS BAR */}
       <div className="statsbar">
-        <div className="stat-item"><span className="stat-n">42</span><span className="stat-l">Dev Cards</span></div>
-        <div className="stat-item"><span className="stat-n">17</span><span className="stat-l">Challenges</span></div>
-        <div className="stat-item"><span className="stat-n">1.2K</span><span className="stat-l">Community Members</span></div>
-        <div className="stat-item"><span className="stat-n">Weekly</span><span className="stat-l">New Content</span></div>
+        {stats.length > 0
+          ? stats.map((stat) => (
+              <div key={stat.id} className="stat-item">
+                <span className="stat-n">{stat.value}</span>
+                <span className="stat-l">{stat.label}</span>
+              </div>
+            ))
+          : (
+              <>
+                <div className="stat-item"><span className="stat-n">42</span><span className="stat-l">Dev Cards</span></div>
+                <div className="stat-item"><span className="stat-n">17</span><span className="stat-l">Challenges</span></div>
+                <div className="stat-item"><span className="stat-n">1.2K</span><span className="stat-l">Community Members</span></div>
+                <div className="stat-item"><span className="stat-n">Weekly</span><span className="stat-l">New Content</span></div>
+              </>
+            )
+        }
       </div>
 
       {/* DEV CARDS */}

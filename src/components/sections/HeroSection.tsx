@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Button from '@components/common/Button';
 import Card from '@components/common/Card';
 import { useScrollToSection } from '@hooks/useScrollToSection';
+import { useSiteStats } from '@features/site-settings/hooks/useSiteStats';
 
 const SAMPLE_CODE = `function buildWithMajdst() {
   const [skills, setSkills] = useState([]);
@@ -17,6 +18,7 @@ const SAMPLE_CODE = `function buildWithMajdst() {
  */
 const HeroSection = () => {
   const { scrollToSection } = useScrollToSection();
+  const { stats } = useSiteStats();
   const [displayedCode, setDisplayedCode] = useState('');
 
   // Simulate typing effect
@@ -80,18 +82,12 @@ const HeroSection = () => {
 
             {/* Stats */}
             <div className="flex gap-8 pt-4 flex-wrap">
-              <div>
-                <p className="text-3xl font-bold text-primary">42</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Dev Cards</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">17</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Challenges</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">1.2K+</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Members</p>
-              </div>
+              {stats.map(stat => (
+                <div key={stat.id}>
+                  <p className="text-3xl font-bold text-primary">{stat.value}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
 

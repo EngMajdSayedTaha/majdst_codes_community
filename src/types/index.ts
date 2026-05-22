@@ -9,6 +9,13 @@ export interface DevCard {
   icon: string;
   topics: string[];
   link?: string;
+  funFact?: string;
+  tagKey?: string;
+  savesCount?: number;
+  isPublished?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Challenge {
@@ -22,6 +29,13 @@ export interface Challenge {
   date?: string;
   status?: 'upcoming' | 'active' | 'completed';
   link?: string;
+  tags?: string[];
+  winnerHandle?: string;
+  startDate?: string;
+  endDate?: string;
+  isPublished?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface MemeCard {
@@ -30,6 +44,67 @@ export interface MemeCard {
   title: string;
   category: string;
   likes?: number;
+  likeCount?: number;
+  isPublished?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+}
+
+export interface CommunityMember {
+  id: string;
+  name: string;
+  githubUsername?: string;
+  bio?: string;
+  avatarUrl?: string;
+  role?: string;
+  skills: string[];
+  githubUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
+  isFeatured?: boolean;
+  isPublished?: boolean;
+  sortOrder?: number;
+  joinedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ChallengeSubmission {
+  id: string;
+  challengeId: string;
+  handle: string;
+  solution: string;
+  status: 'pending' | 'reviewed' | 'winner';
+  adminNotes?: string;
+  submittedAt: string;
+}
+
+export interface SiteStat {
+  id: string;
+  label: string;
+  value: string;
+  icon?: string;
+  sortOrder: number;
+  isPublished: boolean;
+  updatedAt: string;
+}
+
+export interface AboutProfile {
+  id: string;
+  name: string;
+  bio: string;
+  bioExtended?: string;
+  yearsExperience: string;
+  projectsBuilt: string;
+  mentoredDevs: string;
+  avatarUrl?: string;
+  githubUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  discordUrl?: string;
+  telegramUrl?: string;
+  updatedAt: string;
 }
 
 export interface Stat {

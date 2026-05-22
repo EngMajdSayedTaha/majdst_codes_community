@@ -1,76 +1,22 @@
-// Challenges Section Component
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ChallengeCard from '@features/challenges/components/ChallengeCard';
-import type { Challenge } from '@types';
+import { useChallenges } from '@features/challenges/hooks/useChallenges';
 
-const MOCK_CHALLENGES: Challenge[] = [
-  {
-    id: 'featured',
-    title: 'Build a Real-time Chat Application',
-    description:
-      'Create a functional chat app using WebSockets, React, and Node.js with authentication and message persistence',
-    difficulty: 'hard',
-    reward: 500,
-    featured: true,
-    week: 1,
-    status: 'active',
-    date: new Date().toISOString(),
-    link: '#',
-  },
-  {
-    id: 'past1',
-    title: 'Todo List with Advanced Filtering',
-    description:
-      'Build a todo app with filtering, sorting, and local storage persistence using vanilla JavaScript',
-    difficulty: 'easy',
-    reward: 100,
-    week: 4,
-    status: 'completed',
-    date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    link: '#',
-  },
-  {
-    id: 'past2',
-    title: 'Weather Dashboard API Integration',
-    description:
-      'Integrate OpenWeather API to build a dynamic weather dashboard with search and forecast features',
-    difficulty: 'medium',
-    reward: 250,
-    week: 3,
-    status: 'completed',
-    date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-    link: '#',
-  },
-];
 
-/**
- * ChallengesSection - Display weekly challenges
- */
 const ChallengesSection = () => {
-  const [challenges, setChallenges] = useState<Challenge[]>(MOCK_CHALLENGES);
-  const [loading, setLoading] = useState(false);
+  const { challenges, featured: featuredChallenge, loading } = useChallenges();
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
 
-  useEffect(() => {
-    // Simulate loading delay
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setChallenges(MOCK_CHALLENGES);
-      setLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const featuredChallenge = challenges.find((c) => c.featured);
   const otherChallenges = challenges.filter((c) => !c.featured);
 
   if (loading) {
     return (
       <section id="challenges" className="py-20 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Loading...</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-48 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            ))}
           </div>
         </div>
       </section>

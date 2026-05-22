@@ -1,117 +1,119 @@
-// Dev Cards API Service
-import { httpClient } from '@services/api/httpClient';
-import type { DevCard, ApiResponse } from '@types';
+import { supabase } from '@lib/supabaseClient';
+import type { DevCard } from '@types';
 
-const DEV_CARDS_ENDPOINT = '/dev-cards';
+function toDevCard(row: Record<string, unknown>): DevCard {
+  return {
+    id: row.id as string,
+    title: row.title as string,
+    description: row.description as string,
+    difficulty: row.difficulty as DevCard['difficulty'],
+    learningTime: row.learning_time as string,
+    icon: row.icon as string,
+    topics: (row.topics as string[]) ?? [],
+    link: row.link as string | undefined,
+    funFact: row.fun_fact as string | undefined,
+    tagKey: row.tag_key as string | undefined,
+    savesCount: row.saves_count as number | undefined,
+    isPublished: row.is_published as boolean | undefined,
+    sortOrder: row.sort_order as number | undefined,
+    createdAt: row.created_at as string | undefined,
+    updatedAt: row.updated_at as string | undefined,
+  };
+}
 
-/**
- * DevCardsService - Handles all API calls related to dev cards
- */
+function toRow(card: Omit<DevCard, 'id'> | Partial<DevCard>) {
+  const row: Record<string, unknown> = {};
+  if (card.title !== undefined) row.title = card.title;
+  if (card.description !== undefined) row.description = card.description;
+  if (card.difficulty !== undefined) row.difficulty = card.difficulty;
+  if ((card as DevCard).learningTime !== undefined) row.learning_time = (card as DevCard).learningTime;
+  if (card.icon !== undefined) row.icon = card.icon;
+  if (card.topics !== undefined) row.topics = card.topics;
+  if (card.link !== undefined) row.link = card.link;
+  if (card.funFact !== undefined) row.fun_fact = card.funFact;
+  if (card.tagKey !== undefined) row.tag_key = card.tagKey;
+  if (card.savesCount !== undefined) row.saves_count = card.savesCount;
+  if (card.isPublished !== undefined) row.is_published = card.isPublished;
+  if (card.sortOrder !== undefined) row.sort_order = card.sortOrder;
+  return row;
+}
+
 class DevCardsService {
-  /**
-   * Get all dev cards
-   */
   async getDevCards(): Promise<DevCard[]> {
-    try {
-      const response = await httpClient.get<ApiResponse<DevCard[]>>(DEV_CARDS_ENDPOINT);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch dev cards:', error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .select('*')
+      .eq('is_published', true)
+      .order('sort_order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(toDevCard);
   }
 
-  /**
-   * Get dev card by id
-   */
+  async getAllDevCards(): Promise<DevCard[]> {
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(toDevCard);
+  }
+
   async getDevCardById(id: string): Promise<DevCard> {
-    try {
-      const response = await httpClient.get<ApiResponse<DevCard>>(
-        `${DEV_CARDS_ENDPOINT}/${id}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch dev card ${id}:`, error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw new Error(error.message);
+    return toDevCard(data);
   }
 
-  /**
-   * Get dev cards by difficulty
-   */
-  async getDevCardsByDifficulty(
-    difficulty: 'beginner' | 'intermediate' | 'advanced'
-  ): Promise<DevCard[]> {
-    try {
-      const response = await httpClient.get<ApiResponse<DevCard[]>>(
-        DEV_CARDS_ENDPOINT,
-        { difficulty }
-      );
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch dev cards with difficulty ${difficulty}:`, error);
-      throw error;
-    }
+  async getDevCardsByDifficulty(difficulty: 'beginner' | 'intermediate' | 'advanced'): Promise<DevCard[]> {
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .select('*')
+      .eq('is_published', true)
+      .eq('difficulty', difficulty)
+      .order('sort_order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(toDevCard);
   }
 
-  /**
-   * Search dev cards
-   */
   async searchDevCards(query: string): Promise<DevCard[]> {
-    try {
-      const response = await httpClient.get<ApiResponse<DevCard[]>>(
-        DEV_CARDS_ENDPOINT,
-        { search: query }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to search dev cards:', error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .select('*')
+      .eq('is_published', true)
+      .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+      .order('sort_order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(toDevCard);
   }
 
-  /**
-   * Create new dev card (admin only)
-   */
   async createDevCard(card: Omit<DevCard, 'id'>): Promise<DevCard> {
-    try {
-      const response = await httpClient.post<ApiResponse<DevCard>>(
-        DEV_CARDS_ENDPOINT,
-        card
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to create dev card:', error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .insert(toRow(card))
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return toDevCard(data);
   }
 
-  /**
-   * Update dev card
-   */
   async updateDevCard(id: string, card: Partial<DevCard>): Promise<DevCard> {
-    try {
-      const response = await httpClient.put<ApiResponse<DevCard>>(
-        `${DEV_CARDS_ENDPOINT}/${id}`,
-        card
-      );
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to update dev card ${id}:`, error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('dev_cards')
+      .update(toRow(card))
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return toDevCard(data);
   }
 
-  /**
-   * Delete dev card
-   */
   async deleteDevCard(id: string): Promise<void> {
-    try {
-      await httpClient.delete(`${DEV_CARDS_ENDPOINT}/${id}`);
-    } catch (error) {
-      console.error(`Failed to delete dev card ${id}:`, error);
-      throw error;
-    }
+    const { error } = await supabase.from('dev_cards').delete().eq('id', id);
+    if (error) throw new Error(error.message);
   }
 }
 

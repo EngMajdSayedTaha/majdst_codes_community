@@ -20,6 +20,7 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, './src/utils'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@styles': path.resolve(__dirname, './src/styles'),
+      '@lib': path.resolve(__dirname, './src/lib'),
     },
   },
   server: {

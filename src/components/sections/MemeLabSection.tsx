@@ -1,57 +1,10 @@
-// Meme Lab Section Component
 import { useRef, useState } from 'react';
 import Card from '@components/common/Card';
-import type { MemeCard } from '@types';
+import { useMemes } from '@features/memes/hooks/useMemes';
 
-const MOCK_MEMES: MemeCard[] = [
-  {
-    id: '1',
-    imageUrl: 'https://via.placeholder.com/300x300?text=DevLife+1',
-    title: 'When the code works first try',
-    category: 'DevLife',
-    likes: 234,
-  },
-  {
-    id: '2',
-    imageUrl: 'https://via.placeholder.com/300x300?text=Debugging',
-    title: 'Me debugging at 2 AM',
-    category: 'Debugging',
-    likes: 567,
-  },
-  {
-    id: '3',
-    imageUrl: 'https://via.placeholder.com/300x300?text=Git+Memes',
-    title: 'Git commit messages be like',
-    category: 'Git',
-    likes: 891,
-  },
-  {
-    id: '4',
-    imageUrl: 'https://via.placeholder.com/300x300?text=CSS',
-    title: 'CSS be like that',
-    category: 'CSS',
-    likes: 456,
-  },
-  {
-    id: '5',
-    imageUrl: 'https://via.placeholder.com/300x300?text=Production',
-    title: 'Works locally not in production',
-    category: 'Production',
-    likes: 789,
-  },
-  {
-    id: '6',
-    imageUrl: 'https://via.placeholder.com/300x300?text=Code+Review',
-    title: 'Code review expectations',
-    category: 'Code Review',
-    likes: 345,
-  },
-];
 
-/**
- * MemeLabSection - Horizontal scrolling meme carousel
- */
 const MemeLabSection = () => {
+  const { memes } = useMemes();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -144,7 +97,7 @@ const MemeLabSection = () => {
             onScroll={checkScroll}
             className="flex gap-6 overflow-x-auto scrollbar-hide pb-4"
           >
-            {MOCK_MEMES.map(meme => (
+            {memes.map(meme => (
               <div key={meme.id} className="flex-shrink-0 w-80">
                 <Card className="h-full">
                   <div className="mb-4">

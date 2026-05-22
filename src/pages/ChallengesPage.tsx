@@ -1,98 +1,37 @@
 import { useState, FormEvent } from 'react';
 import Navbar from '@components/layout/Navbar';
 import Footer from '@components/layout/Footer';
+import { useChallenges } from '@features/challenges/hooks/useChallenges';
+import { challengesService } from '@features/challenges/services/challenges.service';
 
-interface Challenge {
-  id: number;
-  week: string;
-  diffClass: string;
-  diffLabel: string;
-  title: string;
-  desc: string;
-  tags: string[];
-  submissions: string;
-  status: 'live' | 'closed';
-  winner?: string;
-}
-
-const CHALLENGES: Challenge[] = [
-  {
-    id: 17,
-    week: '🔴 Live Now · Week #17',
-    diffClass: 'diff-mid',
-    diffLabel: 'Intermediate',
-    title: 'Fix the Memory Leak in This Angular Service',
-    desc: "This service is running in a real app and it's slowly eating memory. Find the issue, explain why it happens, and show the correct fix with explanation.",
-    tags: ['Angular', 'RxJS', 'Memory', 'Subscriptions'],
-    submissions: '47 · Closes in 3 days',
-    status: 'live',
-  },
-  {
-    id: 16,
-    week: 'Week #16',
-    diffClass: 'diff-hard',
-    diffLabel: 'Hard',
-    title: 'Debug the SQL Server Deadlock',
-    desc: 'Two stored procs are hitting each other in prod. 3 queries, one deadlock. Find it and fix it.',
-    tags: ['SQL Server', 'Deadlock', '.NET'],
-    submissions: '89 submissions',
-    status: 'closed',
-    winner: '@devhossam_',
-  },
-  {
-    id: 15,
-    week: 'Week #15',
-    diffClass: 'diff-easy',
-    diffLabel: 'Beginner',
-    title: 'TypeScript: Narrow This Type Without Casting',
-    desc: "You have an `unknown` type coming from an API. Make it type-safe without a single `as` cast.",
-    tags: ['TypeScript', 'Type Guards'],
-    submissions: '134 submissions',
-    status: 'closed',
-    winner: '@ts_wizard',
-  },
-  {
-    id: 14,
-    week: 'Week #14',
-    diffClass: 'diff-mid',
-    diffLabel: 'Intermediate',
-    title: 'Optimize This LINQ Query',
-    desc: 'This query works but runs in 3 seconds on 50K rows. Identify the N+1 problem and fix it.',
-    tags: ['.NET', 'LINQ', 'EF Core', 'Performance'],
-    submissions: '67 submissions',
-    status: 'closed',
-    winner: '@dotnet_ninja',
-  },
-  {
-    id: 13,
-    week: 'Week #13',
-    diffClass: 'diff-hard',
-    diffLabel: 'Hard',
-    title: 'Git: Recover the Lost Commit',
-    desc: 'A hard reset wiped 3 commits. Recover the work using git internals.',
-    tags: ['Git', 'Reflog', 'Recovery'],
-    submissions: '43 submissions',
-    status: 'closed',
-    winner: '@gitmaster99',
-  },
-];
+const DIFF_CLASS: Record<string, string> = { easy: 'diff-easy', medium: 'diff-mid', hard: 'diff-hard' };
+const DIFF_LABEL: Record<string, string> = { easy: 'Beginner', medium: 'Intermediate', hard: 'Hard' };
 
 export default function ChallengesPage() {
+  const { challenges, featured: liveChallenge } = useChallenges();
   const [showForm, setShowForm] = useState(false);
   const [solution, setSolution] = useState('');
   const [handle, setHandle] = useState('');
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const liveChallenge = CHALLENGES.find((c) => c.status === 'live');
-  const pastChallenges = CHALLENGES.filter((c) => c.status === 'closed');
+  const pastChallenges = challenges.filter((c) => !c.featured);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!solution.trim() || !handle.trim()) {
+    if (!solution.trim() || !handle.trim() || !liveChallenge) {
       setSubmitStatus('error');
       return;
     }
-    // TODO: wire to real submission API
+    try {
+      await challengesService.submitChallenge({
+        challengeId: liveChallenge.id,
+        handle: handle.trim(),
+        solution: solution.trim(),
+      });
+    } catch {
+      setSubmitStatus('error');
+      return;
+    }
     setSubmitStatus('success');
     setShowForm(false);
     setSolution('');
@@ -121,18 +60,18 @@ export default function ChallengesPage() {
           {liveChallenge && (
             <div className="ch-card featured challenge-live-gap">
               <div className="ch-header">
-                <span className="ch-week">{liveChallenge.week}</span>
-                <span className={`ch-difficulty ${liveChallenge.diffClass}`}>{liveChallenge.diffLabel}</span>
+                <span className="ch-week">🔴 Live Now · Week #{liveChallenge.week}</span>
+                <span className={`ch-difficulty ${DIFF_CLASS[liveChallenge.difficulty] ?? 'diff-mid'}`}>{DIFF_LABEL[liveChallenge.difficulty] ?? liveChallenge.difficulty}</span>
               </div>
               <div className="ch-body">
                 <div className="ch-title">{liveChallenge.title}</div>
-                <p className="ch-desc">{liveChallenge.desc}</p>
+                <p className="ch-desc">{liveChallenge.description}</p>
                 <div className="ch-tags">
-                  {liveChallenge.tags.map((t) => <span key={t} className="ch-tag">{t}</span>)}
+                  {(liveChallenge.tags ?? []).map((t) => <span key={t} className="ch-tag">{t}</span>)}
                 </div>
               </div>
               <div className="ch-footer">
-                <span className="ch-submissions">Submissions: <span>{liveChallenge.submissions}</span></span>
+                <span className="ch-submissions">Active</span>
                 <button className="ch-btn ch-btn-primary" onClick={() => setShowForm(!showForm)}>
                   {showForm ? 'Cancel' : 'Submit Solution →'}
                 </button>
@@ -176,20 +115,20 @@ export default function ChallengesPage() {
               {pastChallenges.map((ch) => (
                 <div key={ch.id} className="ch-card">
                   <div className="ch-header">
-                    <span className="ch-week">{ch.week}</span>
-                    <span className={`ch-difficulty ${ch.diffClass}`}>{ch.diffLabel}</span>
+                    <span className="ch-week">Week #{ch.week}</span>
+                    <span className={`ch-difficulty ${DIFF_CLASS[ch.difficulty] ?? 'diff-mid'}`}>{DIFF_LABEL[ch.difficulty] ?? ch.difficulty}</span>
                   </div>
                   <div className="ch-body">
                     <div className="ch-title">{ch.title}</div>
-                    <p className="ch-desc">{ch.desc}</p>
+                    <p className="ch-desc">{ch.description}</p>
                     <div className="ch-tags">
-                      {ch.tags.map((t) => <span key={t} className="ch-tag">{t}</span>)}
+                      {(ch.tags ?? []).map((t) => <span key={t} className="ch-tag">{t}</span>)}
                     </div>
                   </div>
                   <div className="ch-footer">
-                    {ch.winner
-                      ? <span className="ch-submissions">Winner: <span>{ch.winner}</span></span>
-                      : <span className="ch-submissions">{ch.submissions}</span>
+                    {ch.winnerHandle
+                      ? <span className="ch-submissions">Winner: <span>{ch.winnerHandle}</span></span>
+                      : <span className="ch-submissions">Closed</span>
                     }
                     <button className="ch-btn ch-btn-ghost">See Solution</button>
                   </div>
